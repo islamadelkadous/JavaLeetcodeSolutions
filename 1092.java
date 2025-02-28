@@ -1,42 +1,61 @@
 class Solution {
-  public String shortestCommonSupersequence(String str1, String str2) {
-    StringBuilder sb = new StringBuilder();
-    int i = 0; // str1's index
-    int j = 0; // str2's index
-
-    for (final char c : lcs(str1, str2).toCharArray()) {
-      // Append the letters that are not part of the LCS.
-      while (str1.charAt(i) != c)
-        sb.append(str1.charAt(i++));
-      while (str2.charAt(j) != c)
-        sb.append(str2.charAt(j++));
-      // Append the letter of the LCS and match it with str1 and str2.
-      sb.append(c);
-      ++i;
-      ++j;
+    public String shortestCommonSupersequence(String str1, String str2) {
+        int m = str1.length();
+        int n = str2.length();
+        
+        // Create DP table for LCS length
+        int[][] dp = new int[m + 1][n + 1];
+        
+        // Fill first row and column
+        for (int i = 0; i <= m; i++) {
+            dp[i][0] = 0;
+        }
+        for (int j = 0; j <= n; j++) {
+            dp[0][j] = 0;
+        }
+        
+        // Fill rest of the DP table (LCS length)
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+                if (str1.charAt(i - 1) == str2.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+        
+        // Construct the shortest common supersequence
+        StringBuilder result = new StringBuilder();
+        int i = m, j = n;
+        
+        while (i > 0 && j > 0) {
+            if (str1.charAt(i - 1) == str2.charAt(j - 1)) {
+                result.append(str1.charAt(i - 1));
+                i--;
+                j--;
+            } else if (dp[i - 1][j] > dp[i][j - 1]) {
+                result.append(str1.charAt(i - 1));
+                i--;
+            } else {
+                result.append(str2.charAt(j - 1));
+                j--;
+            }
+        }
+        
+        // Add remaining characters from str1, if any
+        while (i > 0) {
+            result.append(str1.charAt(i - 1));
+            i--;
+        }
+        
+        // Add remaining characters from str2, if any
+        while (j > 0) {
+            result.append(str2.charAt(j - 1));
+            j--;
+        }
+        
+        // Return the reversed result as we built it backwards
+        return result.reverse().toString();
     }
-
-    // Append the remaining letters.
-    return sb.toString() + str1.substring(i) + str2.substring(j);
-  }
-
-  private String lcs(final String a, final String b) {
-    final int m = a.length();
-    final int n = b.length();
-    // dp[i][j] := the length of LCS(a[0..i), b[0..j))
-    StringBuilder[][] dp = new StringBuilder[m + 1][n + 1];
-
-    for (final StringBuilder[] row : dp)
-      for (int i = 0; i < row.length; ++i)
-        row[i] = new StringBuilder();
-
-    for (int i = 1; i <= m; ++i)
-      for (int j = 1; j <= n; ++j)
-        if (a.charAt(i - 1) == b.charAt(j - 1))
-          dp[i][j].append(dp[i - 1][j - 1]).append(a.charAt(i - 1));
-        else
-          dp[i][j] = dp[i - 1][j].length() > dp[i][j - 1].length() ? dp[i - 1][j] : dp[i][j - 1];
-
-    return dp[m][n].toString();
-  }
 }
